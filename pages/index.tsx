@@ -1,9 +1,5 @@
-import dynamic from "next/dynamic";
-
-const App = dynamic(() => import("../components/AppShell"), {
-  ssr: false,
-});
+import SinglePageApp from "components/SinglePageApp";
 
 export default function Index() {
-  return <App />;
+  return <SinglePageApp />;
 }
