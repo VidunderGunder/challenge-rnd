@@ -4,7 +4,15 @@ import {
   useEffect,
   useState,
 } from "react";
-import { Box, CenterProps, Group, Text } from "@mantine/core";
+import {
+  Box,
+  Center,
+  CenterProps,
+  Group,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import CenteredBox from "./general/FullHeightCenter";
 import { AStarFinder } from "astar-typescript";
 import { css } from "styled-components";
@@ -62,7 +70,7 @@ function getQuickestAndSlowestPath(map: CellMap): {
   let positionInitial = getPosition(map);
   const allGoalPositions = getGoalPositions(map);
   /**
-   * All ways of combining all goal positions
+   * Recursively get all combinations of goals
    */
   const allGoalCombinations = allGoalPositions.reduce(
     (acc, goalPosition) => {
@@ -91,7 +99,7 @@ function getQuickestAndSlowestPath(map: CellMap): {
           matrix: walkableMap,
         },
       });
-      routes.push(...finder.findPath(position, goal));
+      routes.push(...finder.findPath(position, goal).slice(0, -1));
       position = goal;
     });
 
@@ -156,27 +164,9 @@ export default forwardRef<HTMLDivElement, Props>(function SinglePageApp(
   ];
 
   const typedMap = map.map((row) => row.split("") as Cell[]);
-  const { quickest, slowest } = getQuickestAndSlowestPath(typedMap);
+  const { quickest } = getQuickestAndSlowestPath(typedMap);
 
-  /**
-   * Animate the quickest path
-   */
-  const [position, setPosition] = useState(quickest[0]);
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      let newIndex = index + 1;
-      if (index < quickest.length - 1) {
-        setIndex((i) => i + 1);
-      } else {
-        newIndex = 0;
-        setIndex(0);
-      }
-      setPosition(quickest[newIndex]);
-    }, 15);
-    return () => clearInterval(interval);
-  }, [index, quickest]);
+  const walkingBackAndFourth = quickest.slice(0, 2);
 
   // Your logic
   return (
@@ -187,21 +177,44 @@ export default forwardRef<HTMLDivElement, Props>(function SinglePageApp(
         font-size: ${pixelSize / 1.25}px;
       `}
     >
-      <Group>
-        <Box>
-          <Text></Text>
+      <Group align="center">
+        <Box
+          css={css`
+            margin: 0 auto;
+          `}
+        >
+          <Title>Fastest</Title>
           <SalesRoute map={typedMap} route={quickest} />
         </Box>
-        <Box>
-          <Text></Text>
-          <SalesRoute map={typedMap} route={slowest} />
+        <Box
+          css={css`
+            margin: 0 auto;
+          `}
+        >
+          <Title>Slowest</Title>
+          <SalesRoute
+            map={typedMap}
+            route={walkingBackAndFourth}
+            minutes="&#x221E;"
+          />
         </Box>
       </Group>
     </CenteredBox>
   );
 });
 
-function SalesRoute({ map, route }: { map: CellMap; route: number[][] }) {
+const clickMs = 100;
+const davidAmountOfChristmasFood = 3.5;
+
+function SalesRoute({
+  map,
+  route,
+  minutes,
+}: {
+  map: CellMap;
+  route: number[][];
+  minutes?: string;
+}) {
   /**
    * Animate the route
    */
@@ -218,7 +231,7 @@ function SalesRoute({ map, route }: { map: CellMap; route: number[][] }) {
         setIndex(0);
       }
       setPosition(route[newIndex]);
-    }, 15);
+    }, clickMs);
     return () => clearInterval(interval);
   }, [index, route]);
 
@@ -253,8 +266,52 @@ function SalesRoute({ map, route }: { map: CellMap; route: number[][] }) {
                     background-color: white;
                     ${isQuickestRoute ? quickestRouteCSS : null}
                     ${isPosition ? positionCSS : null}
+                    position: relative;
+                    overflow: visible;
                   `}
                 >
+                  {isPosition ? (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/david.png"
+                        alt="handsome fella"
+                        css={css`
+                          position: absolute;
+                          /* transform: translate(-50%, -50%); */
+                          max-width: ${pixelSize}px;
+                          /* Scale a bit up */
+                          z-index: 1;
+
+                          /* Wobble the image slightly */
+                          animation: wobble ${`0.${clickMs}`}s ease-in-out
+                            infinite;
+                          @keyframes wobble {
+                            0% {
+                              transform: scale(${davidAmountOfChristmasFood})
+                                rotate(0deg);
+                            }
+                            25% {
+                              transform: scale(${davidAmountOfChristmasFood})
+                                rotate(10deg);
+                            }
+                            50% {
+                              transform: scale(${davidAmountOfChristmasFood})
+                                rotate(0deg);
+                            }
+                            75% {
+                              transform: scale(${davidAmountOfChristmasFood})
+                                rotate(-10deg);
+                            }
+                            100% {
+                              transform: scale(${davidAmountOfChristmasFood})
+                                rotate(0deg);
+                            }
+                          }
+                        `}
+                      />
+                    </>
+                  ) : null}
                   {cell}
                 </span>
               );
@@ -262,6 +319,7 @@ function SalesRoute({ map, route }: { map: CellMap; route: number[][] }) {
           </span>
         );
       })}
+      <Text size="lg">{minutes ?? route.length} minutes</Text>
     </>
   );
 }
