@@ -187,15 +187,17 @@ export default forwardRef<HTMLDivElement, Props>(function SinglePageApp(
 
   useEffect(() => {
     const interval = setInterval(() => {
+      let newIndex = index + 1;
       if (index < quickestRoute.length - 1) {
         setIndex((i) => i + 1);
       } else {
+        newIndex = 0;
         setIndex(0);
       }
-      setPosition(quickestRoute[index]);
-    }, 10);
+      setPosition(quickestRoute[newIndex]);
+    }, 15);
     return () => clearInterval(interval);
-  }, [index]);
+  }, [index, quickestRoute]);
 
   // Your logic
   return (
