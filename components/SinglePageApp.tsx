@@ -127,19 +127,10 @@ function getQuickestPath(map: CellMap): number[][] {
     allPaths.push(routes);
   });
 
-  console.log(
-    "allPathLegths",
-    allPaths.map((c) => c.length)
-  );
-
-  console.log("All", allPaths);
-
   const shortestPath = allPaths.reduce((acc, path) => {
     if (path.length < acc.length) return path;
     return acc;
   }, allPaths[0]);
-
-  console.log("Shortest", shortestPath);
 
   return shortestPath;
 }
