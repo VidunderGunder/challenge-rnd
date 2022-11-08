@@ -1,0 +1,48 @@
+import { Meta } from "@storybook/addon-docs";
+import CRUD from "./CRUD";
+import GraphQL from "./GraphQL";
+
+<Meta />
+
+# Data
+
+Data can be defined through:
+
+- `prisma/schema.prisma`\*
+- `prisma/dev.db`\*\* _...or any other database you choose_
+- Any tool that can migrate to the database\*\*
+
+After adjusting stuff, sync what you did with everything else:
+
+```bash
+yarn sync
+```
+
+**\*Frontend/Fullstack**:  
+You'll likely prefer working with the Prisma Schema.
+
+**\*\*Backend**:  
+You may have some other preference, so interface any way you like, <u>as long as you can pull changes from the database</u>.  
+Preferably add the pull method to `yarn sync`.
+
+`yarn sync` also generates types for a TypeScript implementation of GraphQL.
+
+## APIs
+
+There are two automatically generated APIs. Explore them here:
+
+- [GraphQL](/story/data-graphql--graph-ql)
+  - Served by [Apollo Server](https://www.apollographql.com/docs/apollo-server/) through Next.js serverless API
+  - Consumed by [Apollo Client](https://www.apollographql.com/docs/#apollo-client) in the frontend
+- [CRUD](/story/data-crud--crud) (REST)
+  - Served with Next.js serverless API
+
+## DB
+
+The database is automatically created and seeded.
+
+Explore it with Prisma:
+
+- [Prisma Studio](/story/data-prisma--prisma)
+
+You can use [any database supported by Prisma](https://www.prisma.io/docs/reference/database-reference/supported-databases) (SQLite by default).

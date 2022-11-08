@@ -1,0 +1,42 @@
+{
+  "ts-node": {
+    "baseUrl": ".",
+    "swc": true,
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "es2018",
+    "lib": ["dom", "dom.iterable", "es2018", "esnext.asynciterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "typescript-styled-plugin"
+      }
+    ],
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "css-prop.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.mdx"
+  ],
+  "exclude": ["node_modules"]
+}
