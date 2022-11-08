@@ -4,7 +4,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { CenterProps } from "@mantine/core";
+import { Box, CenterProps, Group, Text } from "@mantine/core";
 import CenteredBox from "./general/FullHeightCenter";
 import { AStarFinder } from "astar-typescript";
 import { css } from "styled-components";
@@ -46,44 +46,15 @@ function getGoalPositions(map: CellMap): Coordinate[] {
   return goalPositions;
 }
 
-// function getAllNavigatableCells(map: Map): Coordinate[] {
-//   const navigationables: Coordinate[] = [];
-//   map.forEach((row, x) => {
-//     row.forEach((cell, y) => {
-//       if (cell === "." || cell === "$") navigationables.push([x, y]);
-//     });
-//   });
-//   return navigationables;
-// }
-
-// function getNextPossibleMoves(
-//   map: Map,
-//   position: Coordinate,
-//   navigationables: Coordinate[]
-// ): Coordinate[] {
-//   const [x, y] = position;
-//   const possibleMoves: Coordinate[] = [];
-//   if (navigationables.includes([x + 1, y])) {
-//     possibleMoves.push([x + 1, y]);
-//   }
-//   if (navigationables.includes([x - 1, y])) {
-//     possibleMoves.push([x - 1, y]);
-//   }
-//   if (navigationables.includes([x, y + 1])) {
-//     possibleMoves.push([x, y + 1]);
-//   }
-//   if (navigationables.includes([x, y - 1])) {
-//     possibleMoves.push([x, y - 1]);
-//   }
-//   return possibleMoves;
-// }
-
 /**
  * Find the quickest path to reach all goals
  *
  * Use the fastest pathfinding algorithm available, which is probably A*, recursively
  */
-function getQuickestPath(map: CellMap): number[][] {
+function getQuickestAndSlowestPath(map: CellMap): {
+  quickest: number[][];
+  slowest: number[][];
+} {
   const walkableMap = map.map((row) =>
     row.map((cell) => walkableConversion[cell])
   );
@@ -127,12 +98,20 @@ function getQuickestPath(map: CellMap): number[][] {
     allPaths.push(routes);
   });
 
-  const shortestPath = allPaths.reduce((acc, path) => {
+  const quickest = allPaths.reduce((acc, path) => {
     if (path.length < acc.length) return path;
     return acc;
   }, allPaths[0]);
 
-  return shortestPath;
+  const slowest = allPaths.reduce((acc, path) => {
+    if (path.length > acc.length) return path;
+    return acc;
+  }, allPaths[0]);
+
+  return {
+    quickest,
+    slowest,
+  };
 }
 
 const walkableConversion = {
@@ -142,7 +121,7 @@ const walkableConversion = {
   "#": 1,
 };
 
-const pixelSize = 20;
+const pixelSize = 10;
 
 export default forwardRef<HTMLDivElement, Props>(function SinglePageApp(
   { ...props },
@@ -177,27 +156,27 @@ export default forwardRef<HTMLDivElement, Props>(function SinglePageApp(
   ];
 
   const typedMap = map.map((row) => row.split("") as Cell[]);
-  const quickestRoute = getQuickestPath(typedMap);
+  const { quickest, slowest } = getQuickestAndSlowestPath(typedMap);
 
   /**
    * Animate the quickest path
    */
-  const [position, setPosition] = useState(quickestRoute[0]);
+  const [position, setPosition] = useState(quickest[0]);
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       let newIndex = index + 1;
-      if (index < quickestRoute.length - 1) {
+      if (index < quickest.length - 1) {
         setIndex((i) => i + 1);
       } else {
         newIndex = 0;
         setIndex(0);
       }
-      setPosition(quickestRoute[newIndex]);
+      setPosition(quickest[newIndex]);
     }, 15);
     return () => clearInterval(interval);
-  }, [index, quickestRoute]);
+  }, [index, quickest]);
 
   // Your logic
   return (
@@ -208,7 +187,44 @@ export default forwardRef<HTMLDivElement, Props>(function SinglePageApp(
         font-size: ${pixelSize / 1.25}px;
       `}
     >
-      {typedMap.map((row, y) => {
+      <Group>
+        <Box>
+          <Text></Text>
+          <SalesRoute map={typedMap} route={quickest} />
+        </Box>
+        <Box>
+          <Text></Text>
+          <SalesRoute map={typedMap} route={slowest} />
+        </Box>
+      </Group>
+    </CenteredBox>
+  );
+});
+
+function SalesRoute({ map, route }: { map: CellMap; route: number[][] }) {
+  /**
+   * Animate the route
+   */
+  const [position, setPosition] = useState(route[0]);
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      let newIndex = index + 1;
+      if (index < route.length - 1) {
+        setIndex((i) => i + 1);
+      } else {
+        newIndex = 0;
+        setIndex(0);
+      }
+      setPosition(route[newIndex]);
+    }, 15);
+    return () => clearInterval(interval);
+  }, [index, route]);
+
+  return (
+    <>
+      {map.map((row, y) => {
         return (
           <span
             key={y}
@@ -217,7 +233,7 @@ export default forwardRef<HTMLDivElement, Props>(function SinglePageApp(
             `}
           >
             {row.map((cell, x) => {
-              const isQuickestRoute = quickestRoute.some(
+              const isQuickestRoute = route.some(
                 (coordinate) => coordinate[0] === x && coordinate[1] === y
               );
               const isPosition = position[0] === x && position[1] === y;
@@ -246,6 +262,6 @@ export default forwardRef<HTMLDivElement, Props>(function SinglePageApp(
           </span>
         );
       })}
-    </CenteredBox>
+    </>
   );
-});
+}
